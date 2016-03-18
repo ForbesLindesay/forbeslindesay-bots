@@ -165,8 +165,12 @@ export default function (data) {
   return getNodeVersion().then(
     version => {
       return Promise.all([
+        updateRepo('ForbesLindesay', 'forbeslindesay-bots', version, data),
         updateRepo('ForbesLindesay', 'tempjs.org', version, data),
         updateRepo('esdiscuss', 'bot', version, data),
+        updateRepo('esdiscuss', 'esdiscuss.org', version, data),
+        updateRepo('readable-email', 'readable-email-bot', version, data),
+        updateRepo('readable-email', 'readable-email-site', version, data),
       ]);
     },
   );
