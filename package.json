@@ -24,7 +24,7 @@
     "testit": "^2.0.2"
   },
   "scripts": {
-    "deploy": "npm run build && npm prune --prod && npm i heroku-release && heroku-release --app forbeslindesay-bots",
+    "deploy": "npm install && npm run build && npm prune --prod && npm i heroku-release && heroku-release --app forbeslindesay-bots",
     "build": "babel src --out-dir lib",
     "lint": "eslint src",
     "test": "babel-node test/index.js && npm run lint"
