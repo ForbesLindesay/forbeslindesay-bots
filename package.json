@@ -1,0 +1,44 @@
+{
+  "name": "forbeslindesay-bots",
+  "private": true,
+  "version": "0.0.0",
+  "main": "lib/index.js",
+  "description": "Bots for accomplishing common tasks",
+  "keywords": [],
+  "files": [
+    "lib/"
+  ],
+  "dependencies": {
+    "babel-runtime": "^6.3.19",
+    "body-parser": "^1.15.0",
+    "express": "^4.13.4",
+    "github-basic": "^6.0.0",
+    "promise": "^7.1.1",
+    "semver": "^5.1.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.4.0",
+    "babel-preset-forbeslindesay": "^2.0.1",
+    "eslint": "^1.10.3",
+    "eslint-config-forbeslindesay": "^1.0.0",
+    "testit": "^2.0.2"
+  },
+  "scripts": {
+    "deploy": "npm run build && npm prune --prod && npm i heroku-release && heroku-release --app forbeslindesay-bots",
+    "build": "babel src --out-dir lib",
+    "lint": "eslint src",
+    "test": "babel-node test/index.js && npm run lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ForbesLindesay/forbeslindesay-bots.git"
+  },
+  "author": {
+    "name": "Forbes Lindesay",
+    "url": "http://github.com/ForbesLindesay"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": "5.7.1"
+  }
+}
