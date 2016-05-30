@@ -23,7 +23,7 @@
     "babel-preset-forbeslindesay": "^2.0.1",
     "babel-register": "^6.9.0",
     "eslint": "^2.10.2",
-    "eslint-config-forbeslindesay": "^1.2.1",
+    "eslint-config-forbeslindesay": "^1.3.0",
     "estraverse-fb": "^1.3.1",
     "testit": "^2.0.2"
   },
