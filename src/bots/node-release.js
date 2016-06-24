@@ -171,6 +171,8 @@ export default function (data) {
         updateRepo('esdiscuss', 'esdiscuss.org', version, data),
         updateRepo('readable-email', 'readable-email-bot', version, data),
         updateRepo('readable-email', 'readable-email-site', version, data),
+        updateRepo('jepso', 'MAPS', version, data),
+        updateRepo('jepso', 'SSCC', version, data),
       ]);
     },
   );
