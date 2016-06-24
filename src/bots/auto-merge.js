@@ -14,8 +14,8 @@ const logins = [
 function isMergable(issue) {
   if (!issue.pull_request) return false;
   if (logins.indexOf(issue.user.login) !== -1) {
-    // at least one hour old
-    return issue.updated_at < (new Date(Date.now() - 1000 * 60 * 60)).toISOString();
+    // at least 5 minutes
+    return issue.updated_at < (new Date(Date.now() - 1000 * 60 * 5)).toISOString();
   }
   return false;
 }
