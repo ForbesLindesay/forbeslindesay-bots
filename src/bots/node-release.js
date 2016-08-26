@@ -173,6 +173,7 @@ export default function (data) {
         updateRepo('readable-email', 'readable-email-site', version, data),
         updateRepo('jepso', 'MAPS', version, data),
         updateRepo('jepso', 'SSCC', version, data),
+        updateRepo('jepso', 'canoeslalomentries', version, data),
       ]);
     },
   );
