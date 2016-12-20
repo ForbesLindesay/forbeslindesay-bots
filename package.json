@@ -43,6 +43,6 @@
   },
   "license": "MIT",
   "engines": {
-    "node": "7.2.1"
+    "node": "7.3.0"
   }
 }
