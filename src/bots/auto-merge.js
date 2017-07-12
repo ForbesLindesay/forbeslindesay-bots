@@ -4,8 +4,6 @@ import throat from 'throat';
 import chalk from 'chalk';
 
 const client = gitHub({version: 3, auth: process.env.GITHUB_TOKEN});
-const betaClient = gitHub({version: 3, auth: process.env.GITHUB_TOKEN});
-betaClient._version = 'application/vnd.github.polaris-preview+json';
 const logins = [
   'ForbesLindesay-Bot',
   'greenkeeperio-bot',
@@ -22,14 +20,14 @@ function isMergable(issue) {
 function mergePullRequest(pr) {
   return client.get(pr.commits_url).then(commits => {
     if (commits.length === 1) {
-      return betaClient.put('/repos/:owner/:repo/pulls/:number/merge', {
+      return client.put('/repos/:owner/:repo/pulls/:number/merge', {
         owner: pr.base.repo.owner.login,
         repo: pr.base.repo.name,
         number: pr.number,
         commit_title: commits[0].commit.message.split('\n\n')[0] + ' (#' + pr.number + ')',
         commit_message: commits[0].commit.message.split('\n\n').slice(1).join('\n\n'),
         sha: pr.head.sha,
-        squash: true,
+        merge_method: 'squash',
       }).then(res => {
         if (res.merged) console.log('merged');
         if (res.merged && pr.head.repo.id === pr.base.repo.id) {
