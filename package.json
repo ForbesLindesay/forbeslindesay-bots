@@ -9,7 +9,7 @@
     "lib/"
   ],
   "dependencies": {
-    "babel-runtime": "^6.3.19",
+    "babel-runtime": "*",
     "body-parser": "^1.15.0",
     "chalk": "^2.0.1",
     "express": "^4.13.4",
@@ -19,9 +19,9 @@
     "throat": "^4.1.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.4.0",
-    "babel-preset-forbeslindesay": "^2.0.1",
-    "babel-register": "^6.9.0",
+    "babel-cli": "*",
+    "babel-preset-forbeslindesay": "*",
+    "babel-register": "*",
     "eslint": "*",
     "eslint-config-forbeslindesay": "*",
     "testit": "^2.0.2"
