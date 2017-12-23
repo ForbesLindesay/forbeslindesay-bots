@@ -22,7 +22,7 @@
     "babel-cli": "*",
     "babel-preset-forbeslindesay": "*",
     "babel-register": "*",
-    "eslint": "*",
+    "eslint": ">=4.14.0",
     "eslint-config-forbeslindesay": "*",
     "testit": "^2.0.2"
   },
