@@ -15,7 +15,7 @@
     "express": "^4.13.4",
     "github-basic": "^6.0.0",
     "promise": "^8.0.1",
-    "semver": "^5.1.0",
+    "semver": "5.4.1",
     "throat": "^4.1.0"
   },
   "devDependencies": {
