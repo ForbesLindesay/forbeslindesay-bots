@@ -18,10 +18,10 @@ function maxVersion(releases) {
 }
 function getNodeVersion() {
   return Promise.all([
-    request('https://nodejs.org/download/release/index.json')
+    request('get', 'https://nodejs.org/download/release/index.json')
       .getBody('utf8')
       .then(JSON.parse),
-    request('https://index.docker.io/v1/repositories/circleci/node/tags')
+    request('get', 'https://index.docker.io/v1/repositories/circleci/node/tags')
       .getBody('utf8')
       .then(JSON.parse),
   ])
