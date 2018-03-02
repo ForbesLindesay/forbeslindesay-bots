@@ -36,11 +36,11 @@ function getNodeVersion() {
         stable: maxVersion(releases),
         lts: maxVersion(releases.filter(release => !!release.lts)),
         stable_circle: maxVersion(releases.filter(release => {
-          return circleCITags.some(tag => 'v' + tag.name === release.version)
+          return circleCITags.some(tag => 'v' + tag.name === release.version);
         })),
         lts_circle: maxVersion(releases.filter(release => {
-          return !!release.lts && circleCITags.some(tag => 'v' + tag.name === release.version)
-        }))
+          return !!release.lts && circleCITags.some(tag => 'v' + tag.name === release.version);
+        })),
       };
     });
 }
@@ -112,6 +112,7 @@ function updateRepo(owner, repo, version, {dryRun = false} = {}) {
       tryGetContent(owner, repo, 'circle.yml'),
       tryGetContent(owner, repo, '.circleci/config.yml'),
     ]).then(([pkg, travis, circle, circle2]) => {
+      const branch = 'node-' + version[mode];
       const updates = [];
       const newPkg = pkg.replace(/\"node\"\: \"\d+\.\d+\.\d+\"/g, '"node": "' + version[mode] + '"');
       assert(newPkg !== pkg, 'Expected package.json to be edited');
