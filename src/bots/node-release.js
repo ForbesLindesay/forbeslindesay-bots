@@ -105,7 +105,7 @@ function needsUpdate(owner, repo, version) {
 function updateRepo(owner, repo, version, {dryRun = false} = {}) {
   return needsUpdate(owner, repo, version).then(mode => {
     if (!mode) return [];
-    console.log('Updating ' + owner + '/' + repo);
+    console.log('Updating ' + owner + '/' + repo + ' to ' + version[mode] + ' (' + mode + ')');
     return Promise.all([
       getContent(owner, repo, 'package.json'),
       tryGetContent(owner, repo, '.travis.yml'),
