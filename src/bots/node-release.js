@@ -76,17 +76,14 @@ function needsUpdate(owner, repo, version) {
   ]).then(([oldPackageSrc, circle2]) => {
     const oldPackage = JSON.parse(oldPackageSrc);
 
-    // If engines are already up to date, our work here is done
-    if (
-      oldPackage.engines.node === version.lts ||
-      oldPackage.engines.node === version.stable
-    ) {
-      return false;
-    }
     const mode = (
       (version.isLTS[oldPackage.engines.node] ? 'lts' : 'stable') +
       (circle2.exists ? '_circle' : '')
     );
+    // If engines are already up to date, our work here is done
+    if (oldPackage.engines.node === version[mode]) {
+      return false;
+    }
     const branch = 'node-' + version[mode];
     return client.get('/repos/:owner/:repo/branches/:branch', {owner, repo, branch}).then(
       b => {
