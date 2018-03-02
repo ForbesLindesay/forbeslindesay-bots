@@ -164,7 +164,7 @@ function updateRepo(owner, repo, version, {dryRun = false} = {}) {
       }
       const commit = {
         branch,
-        message: 'Update to node v' + currentVersion,
+        message: 'Update to node v' + version[mode],
         updates,
       };
       const calls = [
@@ -184,11 +184,11 @@ function updateRepo(owner, repo, version, {dryRun = false} = {}) {
               branch: 'master',
             },
             {
-              title: 'Update to node v' + currentVersion,
+              title: 'Update to node v' + version[mode],
               body: (
                 'This is an automated pull request to update the version of node.js. You can ' +
                 'find release notes for what changed in this release at ' +
-                'https://nodejs.org/en/blog/release/v' + currentVersion + '/' +
+                'https://nodejs.org/en/blog/release/v' + version[mode] + '/' +
                 '\n\n' +
                 'If integration tests pass, this pull request can be safely merged.'
               ),
