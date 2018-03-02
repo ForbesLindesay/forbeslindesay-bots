@@ -16,6 +16,7 @@
     "github-basic": "^6.0.0",
     "promise": "^8.0.1",
     "semver": "^5.1.0",
+    "then-request": "^5.0.0",
     "throat": "^4.1.0"
   },
   "devDependencies": {
@@ -42,6 +43,6 @@
   },
   "license": "MIT",
   "engines": {
-    "node": "9.7.0"
+    "node": "8.9.3"
   }
 }

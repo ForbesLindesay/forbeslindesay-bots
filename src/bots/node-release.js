@@ -1,24 +1,48 @@
 import assert from 'assert';
 import gitHub from 'github-basic';
 import Promise from 'promise';
+import request from 'then-request';
 import {maxSatisfying} from 'semver';
 
 const client = gitHub({version: 3, auth: process.env.GITHUB_TOKEN});
 
+function maxVersion(releases) {
+  return maxSatisfying(
+    releases.filter(
+      release => /^v\d+\.\d+\.\d+$/.test(release.version),
+    ).map(
+      release => release.version.substr(1),
+    ),
+    '*',
+  );
+}
 function getNodeVersion() {
-  return client.get('/repos/:owner/:repo/tags', {
-    owner: 'nodejs',
-    repo: 'node',
-  }).then(releases => {
-    return maxSatisfying(
-      releases.filter(
-        release => /^v\d+\.\d+\.\d+$/.test(release.name),
-      ).map(
-        release => release.name.substr(1),
-      ),
-      '*',
-    );
-  });
+  return Promise.all([
+    request('https://nodejs.org/download/release/index.json')
+      .getBody('utf8')
+      .then(JSON.parse),
+    request('https://index.docker.io/v1/repositories/circleci/node/tags')
+      .getBody('utf8')
+      .then(JSON.parse),
+  ])
+    .then(([releases, circleCITags]) => {
+      return {
+        isLTS: releases.reduce((all, release) => {
+          if (/^v\d+\.\d+\.\d+$/.test(release.version)) {
+            all[release.version.substr(1)] = !!release.lts;
+          }
+          return all;
+        }, {}),
+        stable: maxVersion(releases),
+        lts: maxVersion(releases.filter(release => !!release.lts)),
+        stable_circle: maxVersion(releases.filter(release => {
+          return circleCITags.some(tag => 'v' + tag.name === release.version)
+        })),
+        lts_circle: maxVersion(releases.filter(release => {
+          return !!release.lts && circleCITags.some(tag => 'v' + tag.name === release.version)
+        }))
+      };
+    });
 }
 
 function getContent(owner, repo, path) {
@@ -45,14 +69,25 @@ function tryGetContent(owner, repo, path) {
   );
 }
 
-function needsUpdate(owner, repo, currentVersion) {
-  return getContent(owner, repo, 'package.json').then(oldPackageSrc => {
+function needsUpdate(owner, repo, version) {
+  return Promise.all([
+    getContent(owner, repo, 'package.json'),
+    tryGetContent(owner, repo, '.circleci/config.yml'),
+  ]).then(([oldPackageSrc, circle2]) => {
     const oldPackage = JSON.parse(oldPackageSrc);
 
     // If engines are already up to date, our work here is done
-    if (oldPackage.engines.node === currentVersion) return false;
-
-    const branch = 'node-' + currentVersion;
+    if (
+      oldPackage.engines.node === version.lts ||
+      oldPackage.engines.node === version.stable
+    ) {
+      return false;
+    }
+    const mode = (
+      (version.isLTS[oldPackage.engines.node] ? 'lts' : 'stable') +
+      (circle2.exists ? '_circle' : '')
+    );
+    const branch = 'node-' + version[mode];
     return client.get('/repos/:owner/:repo/branches/:branch', {owner, repo, branch}).then(
       b => {
         assert(b.name === branch);
@@ -61,27 +96,27 @@ function needsUpdate(owner, repo, currentVersion) {
       },
       err => {
         if (err.statusCode !== 404) throw err;
-        return true;
+        return mode;
       },
     );
   });
 }
 
-function updateRepo(owner, repo, currentVersion, {dryRun = false} = {}) {
-  const branch = 'node-' + currentVersion;
-  return needsUpdate(owner, repo, currentVersion).then(isUpdateNeeded => {
-    if (!isUpdateNeeded) return [];
+function updateRepo(owner, repo, version, {dryRun = false} = {}) {
+  return needsUpdate(owner, repo, version).then(mode => {
+    if (!mode) return [];
     console.log('Updating ' + owner + '/' + repo);
     return Promise.all([
       getContent(owner, repo, 'package.json'),
       tryGetContent(owner, repo, '.travis.yml'),
       tryGetContent(owner, repo, 'circle.yml'),
-    ]).then(([pkg, travis, circle]) => {
+      tryGetContent(owner, repo, '.circleci/config.yml'),
+    ]).then(([pkg, travis, circle, circle2]) => {
       const updates = [];
-      const newPkg = pkg.replace(/\"node\"\: \"\d+\.\d+\.\d+\"/g, '"node": "' + currentVersion + '"');
+      const newPkg = pkg.replace(/\"node\"\: \"\d+\.\d+\.\d+\"/g, '"node": "' + version[mode] + '"');
       assert(newPkg !== pkg, 'Expected package.json to be edited');
       assert(
-        JSON.parse(newPkg).engines.node === currentVersion,
+        JSON.parse(newPkg).engines.node === version[mode],
         'Expected package.json to be updated to current version',
       );
       updates.push({
@@ -91,13 +126,13 @@ function updateRepo(owner, repo, currentVersion, {dryRun = false} = {}) {
       if (travis.exists) {
         const newTravisA = travis.content.replace(
           /node\_js\:\n {2}\- \"\d+\.\d+\.\d+\"/g,
-          'node_js:\n  - "' + currentVersion + '"',
+          'node_js:\n  - "' + version[mode] + '"',
         );
         assert(travis.content !== newTravisA, 'Expected .travis.yml to be edited');
 
         const newTravisB = newTravisA.replace(
           /node\_js\: \d+\.\d+\.\d+/g,
-          'node_js: ' + currentVersion,
+          'node_js: ' + version[mode],
         );
         assert(newTravisA !== newTravisB, 'Expected .travis.yml to be edited');
         updates.push({
@@ -108,12 +143,23 @@ function updateRepo(owner, repo, currentVersion, {dryRun = false} = {}) {
       if (circle.exists) {
         const newCircle = circle.content.replace(
           /node\:\n {4}version\: \d+\.\d+\.\d+/g,
-          'node:\n    version: ' + currentVersion,
+          'node:\n    version: ' + version[mode],
         );
         assert(circle.content !== newCircle, 'Expected circle.yml to be edited');
         updates.push({
           path: 'circle.yml',
           content: newCircle,
+        });
+      }
+      if (circle2.exists) {
+        const newCircle2 = circle2.content.replace(
+          /node\:\d+\.\d+\.\d+/g,
+          'node:' + version[mode],
+        );
+        assert(circle2.content !== newCircle2, 'Expected .circleci/config.yml to be edited');
+        updates.push({
+          path: '.circleci/config.yml',
+          content: newCircle2,
         });
       }
       const commit = {
