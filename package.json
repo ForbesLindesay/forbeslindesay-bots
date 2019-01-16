@@ -25,7 +25,7 @@
     "babel-register": "*",
     "eslint": "*",
     "eslint-config-forbeslindesay": "*",
-    "testit": "^2.0.2"
+    "testit": "^3.1.0"
   },
   "scripts": {
     "deploy": "npm install && npm run build && npm prune --prod && npm i heroku-release && heroku-release --app forbeslindesay-bots",
